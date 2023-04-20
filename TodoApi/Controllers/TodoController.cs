@@ -64,7 +64,12 @@ namespace TodoApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTodoItem(int id)
         {
-            await _todoRepository.DeleteAsync(id);
+            bool isDeleted = await _todoRepository.DeleteAsync(id);
+
+            if (!isDeleted)
+            {
+                return BadRequest(new { message = "Todo item with the specified id was not found" });
+            }
 
             return NoContent();
         }

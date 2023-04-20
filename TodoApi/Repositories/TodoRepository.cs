@@ -18,16 +18,18 @@ namespace TodoApi.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
             var todoItem = await _context.TodoItems.FindAsync(id);
-            if (todoItem != null)
+            if (todoItem == null)
             {
-                _context.TodoItems.Remove(todoItem);
-                await _context.SaveChangesAsync();
-            } else {
-                await Task.FromResult<string?>(null);
+                return false;
             }
+
+            _context.TodoItems.Remove(todoItem);
+            await _context.SaveChangesAsync();
+
+            return true;
         }
 
         public async Task<List<TodoItem>> GetAllAsync()
