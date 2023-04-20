@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TodoApi.Data;
-using TodoApi.Model;
+using TodoApi.Models;
 
 namespace TodoApi.Repositories
 {
@@ -25,6 +25,8 @@ namespace TodoApi.Repositories
             {
                 _context.TodoItems.Remove(todoItem);
                 await _context.SaveChangesAsync();
+            } else {
+                await Task.FromResult<string?>(null);
             }
         }
 

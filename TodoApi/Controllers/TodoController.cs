@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using TodoApi.Model;
+using TodoApi.Models;
 using TodoApi.Repositories;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace TodoApi.Controllers
 {
@@ -15,18 +13,19 @@ namespace TodoApi.Controllers
 
         public TodoController(ITodoRepository todoRepository)
         {
-            this._todoRepository = todoRepository;
+            _todoRepository = todoRepository;
         }
-        // GET: api/<ValuesController>
+
+        // GET: api/Todo
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TodoItem>>> Get()
+        public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItems()
         {
             return Ok(await _todoRepository.GetAllAsync());
         }
 
-        // GET api/<ValuesController>/5
+        // GET: api/Todo/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<TodoItem>> Get(int id)
+        public async Task<ActionResult<TodoItem>> GetTodoItem(int id)
         {
             var todoItem = await _todoRepository.GetByIdAsync(id);
 
@@ -38,25 +37,11 @@ namespace TodoApi.Controllers
             return todoItem;
         }
 
-        // POST api/<ValuesController>
-        [HttpPost]
-        public async Task<IActionResult> Post([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Disallow)] TodoItem todoItem)
-        {
-            // if (todoItem == null)
-            // {
-            //     return BadRequest();
-            // } 
-
-            await _todoRepository.AddAsync(todoItem);
-
-            return NoContent();
-        }
-
-        // PUT api/<ValuesController>/5
+        // PUT: api/Todo/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Disallow)] TodoItem todoItem)
+        public async Task<IActionResult> PutTodoItem(int id, [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Disallow)] TodoItem todoItem)
         {
-           if (id != todoItem.Id)
+            if (id != todoItem.Id)
             {
                 return BadRequest();
             }
@@ -66,11 +51,21 @@ namespace TodoApi.Controllers
             return NoContent();
         }
 
-        // DELETE api/<ValuesController>/5
+        // POST: api/Todo
+        [HttpPost]
+        public async Task<ActionResult<TodoItem>> PostTodoItem([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Disallow)] TodoItem todoItem)
+        {
+            await _todoRepository.AddAsync(todoItem);
+
+            return CreatedAtAction(nameof(GetTodoItem), new { id = todoItem.Id }, todoItem);
+        }
+
+        // DELETE: api/Todo/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> DeleteTodoItem(int id)
         {
             await _todoRepository.DeleteAsync(id);
+
             return NoContent();
         }
     }
