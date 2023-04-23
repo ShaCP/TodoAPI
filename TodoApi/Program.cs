@@ -1,21 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using TodoApi.Data;
-using TodoApi.Repositories;
+using TodoApi.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-// Configure Entity Framework Core
-builder.Services.AddDbContext<TodoDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("TodoConnection")));
-
-builder.Services.AddScoped<ITodoRepository, TodoRepository>();
+ConfigureServices.Configure(builder);
 
 Console.WriteLine("Connection string: " + builder.Configuration.GetConnectionString("TodoConnection"));
 
