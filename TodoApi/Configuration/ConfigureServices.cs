@@ -25,7 +25,7 @@ namespace TodoApi.Configuration
             options.UseSqlServer(builder.Configuration.GetConnectionString("TodoConnection")));
 
             services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<TodoDbContext>().AddDefaultTokenProviders();
-
+            
             var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
 
             if (jwtSettings == null ||
@@ -35,6 +35,8 @@ namespace TodoApi.Configuration
             {
                 throw new InvalidOperationException("JWT settings are missing or incomplete in the configuration.");
             }
+
+            services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 
             services.AddAuthentication(options =>
             {
