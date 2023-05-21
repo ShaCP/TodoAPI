@@ -15,6 +15,15 @@ namespace TodoApi.Configuration
         {
             var services = builder.Services;
 
+            // todo: change cors to more secure policy
+            services.AddCors(options =>
+            {
+                options.AddPolicy(name: "Dev", policy =>
+                {
+                    policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+                });
+            });
+
             services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             services.AddEndpointsApiExplorer();

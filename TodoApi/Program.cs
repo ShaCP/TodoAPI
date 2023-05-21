@@ -1,12 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using TodoApi.Configuration;
 
+// args is the command line arguments passed to the application.
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// this is my custom class to add services to the container
 ConfigureServices.Configure(builder);
-
-Console.WriteLine("Connection string: " + builder.Configuration.GetConnectionString("TodoConnection"));
 
 var app = builder.Build();
 
@@ -23,6 +22,8 @@ else
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("Dev");
 
 app.UseAuthorization();
 
