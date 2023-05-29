@@ -2,11 +2,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 using TodoApi.Models;
 
 namespace TodoApi.Controllers
@@ -28,14 +26,9 @@ namespace TodoApi.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             var user = new User
             {
-                UserName = model.Email,
+                UserName = model.UserName,
                 Email = model.Email
             };
 
@@ -46,25 +39,30 @@ namespace TodoApi.Controllers
                 return BadRequest(result.Errors);
             }
 
-            return Ok();
+            var tokenString = this.GenerateToken(user);
+
+            return Ok(new { Token = tokenString, user.UserName, user.Email });
         }
 
         // POST api/auth/login
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             var user = await _userManager.FindByEmailAsync(model.Email);
 
             if (user == null || !(await _userManager.CheckPasswordAsync(user, model.Password)))
             {
-                return Unauthorized();
+                return Unauthorized(new { description = "Invalid credentials." });
             }
 
+            var tokenString = this.GenerateToken(user);
+
+            return Ok(new { Token = tokenString, user.UserName, user.Email });
+        }
+
+        [NonAction]
+        public string GenerateToken(Models.User user)
+        {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_jwtSettings.Key);
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -83,7 +81,7 @@ namespace TodoApi.Controllers
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var tokenString = tokenHandler.WriteToken(token);
 
-            return Ok(new { Token = tokenString });
+            return tokenString;
         }
     }
 }

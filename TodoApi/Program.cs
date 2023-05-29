@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TodoApi.Configuration;
+using TodoApi.Middleware;
 
 // args is the command line arguments passed to the application.
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 ConfigureServices.Configure(builder);
 
 var app = builder.Build();
+
+app.UseMiddleware<ExceptionMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -19,9 +22,8 @@ else
 {
     app.UseExceptionHandler("/Error");
     app.UseHsts();
+    app.UseHttpsRedirection();
 }
-
-app.UseHttpsRedirection();
 
 app.UseCors("Dev");
 
