@@ -33,7 +33,7 @@ namespace TodoApi.Configuration
             services.AddDbContext<TodoDbContext>(options =>
             options.UseSqlServer(builder.Configuration.GetConnectionString("TodoConnection")));
 
-            services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<TodoDbContext>().AddDefaultTokenProviders();
+            services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<TodoDbContext>().AddDefaultTokenProviders();
             
             var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
 

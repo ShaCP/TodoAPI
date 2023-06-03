@@ -2,7 +2,8 @@
 
 namespace TodoApi.Models
 {
-    public class User : IdentityUser
+    public class ApplicationUser : IdentityUser
     {
+        public ICollection<TodoItem> Todos { get; set; } = new List<TodoItem>();
     }
 }

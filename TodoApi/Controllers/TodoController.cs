@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System.Security.Claims;
 using TodoApi.Models;
 using TodoApi.Repositories;
 
@@ -58,6 +59,8 @@ namespace TodoApi.Controllers
         [HttpPost]
         public async Task<ActionResult<TodoItem>> PostTodoItem([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Disallow)] TodoItem todoItem)
         {
+            string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            todoItem.UserId = userId;
             await _todoRepository.AddAsync(todoItem);
 
             return CreatedAtAction(nameof(GetTodoItem), new { id = todoItem.Id }, todoItem);

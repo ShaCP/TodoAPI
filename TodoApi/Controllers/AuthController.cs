@@ -13,10 +13,10 @@ namespace TodoApi.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly UserManager<User> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly JwtSettings _jwtSettings;
 
-        public AuthController(UserManager<User> userManager, IOptions<JwtSettings> jwtSettings)
+        public AuthController(UserManager<ApplicationUser> userManager, IOptions<JwtSettings> jwtSettings)
         {
             _userManager = userManager;
             _jwtSettings = jwtSettings.Value;
@@ -26,7 +26,7 @@ namespace TodoApi.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterModel model)
         {
-            var user = new User
+            var user = new ApplicationUser
             {
                 UserName = model.UserName,
                 Email = model.Email
@@ -61,7 +61,7 @@ namespace TodoApi.Controllers
         }
 
         [NonAction]
-        public string GenerateToken(Models.User user)
+        public string GenerateToken(Models.ApplicationUser user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_jwtSettings.Key);

@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using TodoApi.Data;
 using TodoApi.Models;
 
@@ -7,10 +9,12 @@ namespace TodoApi.Repositories
     public class TodoRepository : ITodoRepository
     {
         private readonly TodoDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public TodoRepository(TodoDbContext context)
+        public TodoRepository(TodoDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
         public async Task AddAsync(TodoItem item)
         {

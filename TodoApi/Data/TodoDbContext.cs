@@ -4,7 +4,7 @@ using TodoApi.Models;
 
 namespace TodoApi.Data
 {
-    public class TodoDbContext : IdentityDbContext<User>
+    public class TodoDbContext : IdentityDbContext<ApplicationUser>
     {
         public TodoDbContext(DbContextOptions<TodoDbContext> options) : base(options)
         {
