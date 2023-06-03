@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.Security.Claims;
+using TodoApi.Enums;
 using TodoApi.Models;
 using TodoApi.Repositories;
+using TodoApi.Services;
 
 namespace TodoApi.Controllers
 {
@@ -14,17 +16,26 @@ namespace TodoApi.Controllers
     public class TodoController : ControllerBase
     {
         private readonly ITodoRepository _todoRepository;
+        private readonly ITodoItemService _todoItemService;
 
-        public TodoController(ITodoRepository todoRepository)
+        public TodoController(ITodoRepository todoRepository, ITodoItemService todoItemService)
         {
             _todoRepository = todoRepository;
+            _todoItemService = todoItemService;
         }
 
         // GET: api/Todo
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItems()
         {
-            return Ok(await _todoRepository.GetAllAsync());
+            string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+
+            return Ok(await _todoRepository.GetAllAsync(userId));
         }
 
         // GET: api/Todo/5
@@ -45,21 +56,38 @@ namespace TodoApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutTodoItem(int id, [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Disallow)] TodoItem todoItem)
         {
-            if (id != todoItem.Id)
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var validationResult = await _todoItemService.ValidateTodoItem(id, userId);
+
+            switch (validationResult)
             {
-                return BadRequest();
+                case TodoItemValidationResult.NotFound:
+                    return NotFound();
+                case TodoItemValidationResult.Forbidden:
+                    return Forbid();
+                default:
+                    bool isDeleted = await _todoRepository.DeleteAsync(id);
+
+                    if (!isDeleted)
+                    {
+                        return NotFound(new { message = "Todo item with the specified id was not found" });
+                    }
+                    await _todoRepository.UpdateAsync(todoItem);
+                    return NoContent();
             }
-
-            await _todoRepository.UpdateAsync(todoItem);
-
-            return NoContent();
         }
 
         // POST: api/Todo
         [HttpPost]
         public async Task<ActionResult<TodoItem>> PostTodoItem([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Disallow)] TodoItem todoItem)
         {
-            string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+
             todoItem.UserId = userId;
             await _todoRepository.AddAsync(todoItem);
 
@@ -70,14 +98,25 @@ namespace TodoApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTodoItem(int id)
         {
-            bool isDeleted = await _todoRepository.DeleteAsync(id);
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var validationResult = await _todoItemService.ValidateTodoItem(id, userId);
 
-            if (!isDeleted)
+            switch (validationResult)
             {
-                return BadRequest(new { message = "Todo item with the specified id was not found" });
-            }
+                case TodoItemValidationResult.NotFound:
+                    return NotFound();
+                case TodoItemValidationResult.Forbidden:
+                    return Forbid();
+                default:
+                    bool isDeleted = await _todoRepository.DeleteAsync(id);
 
-            return NoContent();
+                    if (!isDeleted)
+                    {
+                        return NotFound(new { message = "Todo item with the specified id was not found" });
+                    }
+
+                    return NoContent();
+            }
         }
     }
 }

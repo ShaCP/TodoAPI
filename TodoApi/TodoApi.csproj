@@ -25,4 +25,10 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.29.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Models\TodoItemDto.cs">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Compile>
+  </ItemGroup>
+
 </Project>

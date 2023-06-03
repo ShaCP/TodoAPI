@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using TodoApi.Converters;
 using TodoApi.Data;
 using TodoApi.Models;
 using TodoApi.Repositories;
+using TodoApi.Services;
 
 namespace TodoApi.Configuration
 {
@@ -68,6 +70,8 @@ namespace TodoApi.Configuration
             });
 
             services.AddScoped<ITodoRepository, TodoRepository>();
+            services.AddScoped<ITodoItemService, TodoItemService>();
+            services.AddScoped<ITodoItemConverter, TodoItemConverter>();
         }
 
     }

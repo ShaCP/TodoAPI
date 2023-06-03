@@ -5,7 +5,9 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using TodoApi.Converters;
 using TodoApi.Models;
+using TodoApi.Repositories;
 
 namespace TodoApi.Controllers
 {
@@ -14,11 +16,15 @@ namespace TodoApi.Controllers
     public class AuthController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ITodoRepository _todoRepository;
+        private readonly ITodoItemConverter _todoItemConverter;
         private readonly JwtSettings _jwtSettings;
 
-        public AuthController(UserManager<ApplicationUser> userManager, IOptions<JwtSettings> jwtSettings)
+        public AuthController(UserManager<ApplicationUser> userManager, IOptions<JwtSettings> jwtSettings, ITodoRepository todoRepository, ITodoItemConverter todoItemConverter)
         {
             _userManager = userManager;
+            _todoRepository = todoRepository;
+            _todoItemConverter = todoItemConverter;
             _jwtSettings = jwtSettings.Value;
         }
 
@@ -55,9 +61,11 @@ namespace TodoApi.Controllers
                 return Unauthorized(new { description = "Invalid credentials." });
             }
 
-            var tokenString = this.GenerateToken(user);
+            var tokenString = GenerateToken(user);
 
-            return Ok(new { Token = tokenString, user.UserName, user.Email });
+            var todos = _todoItemConverter.ConvertToDto(await _todoRepository.GetAllAsync(user.Id));
+
+            return Ok(new { Token = tokenString, user.UserName, user.Email, Todos = todos });
         }
 
         [NonAction]
@@ -72,7 +80,7 @@ namespace TodoApi.Controllers
                     new Claim(ClaimTypes.NameIdentifier, user.Id),
                     new Claim(ClaimTypes.Name, user.UserName),
                 }),
-                Expires = DateTime.UtcNow.AddHours(1),
+                Expires = DateTime.UtcNow.AddHours(168),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
                 Issuer = _jwtSettings.Issuer,
                 Audience = _jwtSettings.Audience

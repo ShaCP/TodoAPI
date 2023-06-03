@@ -6,7 +6,7 @@ using TodoApi.Models;
 
 namespace TodoApi.Repositories
 {
-    public class TodoRepository : ITodoRepository
+    public class TodoRepository : ITodoRepository, IDisposable
     {
         private readonly TodoDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
@@ -36,14 +36,17 @@ namespace TodoApi.Repositories
             return true;
         }
 
-        public async Task<List<TodoItem>> GetAllAsync()
+        public async Task<List<TodoItem>> GetAllAsync(string userId)
         {
-            return await _context.TodoItems.ToListAsync();
+            var todoItems = await _context.TodoItems.Where(todoItem => todoItem.UserId == userId).ToListAsync();
+
+            return todoItems;
         }
 
         public async Task<TodoItem?> GetByIdAsync(int id)
         {
-            return await _context.TodoItems.FindAsync(id);
+            var todoItem = await _context.TodoItems.FindAsync(id);
+            return todoItem;
         }
 
         public async Task<bool> SaveChangesAsync()
@@ -59,6 +62,12 @@ namespace TodoApi.Repositories
                 _context.Entry(currentItem).CurrentValues.SetValues(item);
                 await _context.SaveChangesAsync();
             }
+        }
+
+        public void Dispose()
+        {
+            _context.Dispose();
+            //GC.SuppressFinalize(this);
         }
     }
 }
